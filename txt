@@ -1,0 +1,43 @@
+{
+  "achievements": [
+    {
+      "achievement_title": "",
+      "year": "",
+      "description": "",
+      "certificate_photo": ""
+    }
+  ],
+
+  "contact": {
+    "email": "",
+    "phone": "",
+    "whatsapp": "",
+    "linkedin": "",
+    "github": "",
+    "location": ""
+  },
+
+  "blog": [
+    {
+      "title": "",
+      "cover_photo": "",
+      "content": "",
+      "published_at": ""
+    }
+  ],
+
+  "tech_stack_overview": [
+    {
+      "tech_name": "",
+      "level": "",
+      "years_of_experience": ""
+    }
+  ],
+
+  "stats": {
+    "projects_completed": "",
+    "happy_clients": "",
+    "years_of_experience": "",
+    "technologies_mastered": ""
+  }
+}
