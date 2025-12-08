@@ -40,7 +40,7 @@ app.use('/api/aboutme', AboutMe)
 app.use('/api/certification', Certification)
 app.use("/api/contact", Contact);
 app.use('/api/cover', Cover)
-app.use('/login', Login)
+app.use('/api/login', Login)
 app.use('/api/projects', Projects)
 app.use('/api/projectcategory', ProjectsCategory)
 app.use('/api/services', Services)
