@@ -179,3 +179,493 @@ Component layout for React + Tailwind
 Dark & Light mode ready
 
 Do you want me to make that full plan?
+
+
+
+
+
+
+
+
+
+portfolio
+
+projectcategories
+
+
+
+Documents
+2
+
+Aggregations
+
+Schema
+
+Indexes
+1
+
+Validation
+
+
+Type a query: { field: 'value' } or 
+Generate query
+
+
+
+
+
+
+Options
+
+Add data
+
+Export Data
+
+Update
+
+Delete
+
+25
+1 – 2 of 2
+
+
+
+
+
+
+
+
+_id
+6931aeafa60de9900d364188
+title
+"portfolio"
+__v
+0
+_id
+6931bfeddd2090f8dab1671c
+title
+"portfolio"
+__v
+0
+
+ده من الmongoo db atlas 
+
+Category *
+No categories available. Please add categories first.
+
+بس جايب هنا فاضى
+
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Context } from "@/context";
+import { useContext, useEffect, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+
+interface FormProps {
+    isOpen: boolean;
+    onClose: () => void;
+    isEditing: boolean;
+    projectData?: any;
+}
+
+const FormProject = ({ isOpen, onClose, isEditing, projectData }: FormProps) => {
+
+    const context = useContext(Context);
+
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        category: "",
+        githubFront: "",
+        githubBack: "",
+        demo: "",
+        hot: false,
+    });
+
+    const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    // تحميل البيانات في حالة التعديل
+    // في FormProject
+    useEffect(() => {
+        if (isEditing && projectData) {
+            // تحويل البيانات للاستخدام في الفورم
+            const categoryId = typeof projectData.category === 'string'
+                ? projectData.category
+                : (projectData.category as any)._id || '';
+
+            const skillIds = Array.isArray(projectData.skills)
+                ? projectData.skills.map((skill: any) =>
+                    typeof skill === 'string' ? skill : (skill as any)._id
+                )
+                : [];
+
+            setFormData({
+                title: projectData.title || "",
+                description: projectData.description || "",
+                category: categoryId,
+                githubFront: projectData.githubFront || "",
+                githubBack: projectData.githubBack || "",
+                demo: projectData.demo || "",
+                hot: projectData.hot || false,
+            });
+
+            setSelectedSkills(skillIds);
+        }
+    }, [isEditing, projectData]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { id, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [id]: value
+        }));
+    };
+
+    const handleSelectChange = (value: string) => {
+        setFormData(prev => ({
+            ...prev,
+            category: value
+        }));
+    };
+
+    const handleSkillsChange = (skillId: string) => {
+        setSelectedSkills(prev => {
+            if (prev.includes(skillId)) {
+                return prev.filter(id => id !== skillId);
+            } else {
+                return [...prev, skillId];
+            }
+        });
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
+
+    const handleCheckboxChange = (checked: boolean) => {
+        setFormData(prev => ({
+            ...prev,
+            hot: checked
+        }));
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setLoading(true);
+
+        if (!context) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const formDataToSend = new FormData();
+
+            // إضافة الحقول الأساسية
+            formDataToSend.append("title", formData.title);
+            formDataToSend.append("description", formData.description);
+            formDataToSend.append("category", formData.category);
+            formDataToSend.append("hot", formData.hot.toString());
+
+            // إضافة الحقول الاختيارية
+            if (formData.githubFront) {
+                formDataToSend.append("githubFront", formData.githubFront);
+            }
+            if (formData.githubBack) {
+                formDataToSend.append("githubBack", formData.githubBack);
+            }
+            if (formData.demo) {
+                formDataToSend.append("demo", formData.demo);
+            }
+
+            // إضافة المهارات
+            selectedSkills.forEach(skillId => {
+                formDataToSend.append("skills[]", skillId);
+            });
+
+            // إضافة الصورة إذا كانت موجودة
+            if (imageFile) {
+                formDataToSend.append("image", imageFile);
+            } else if (isEditing && projectData?.image) {
+                // في حالة التعديل، إذا لم يتم اختيار صورة جديدة، أرسل الصورة الحالية
+                formDataToSend.append("image", projectData.image);
+            }
+
+            if (isEditing && projectData) {
+                // تحديث المشروع
+                await context.portfolioActions.updateExistingProject(
+                    projectData._id,
+                    context.userToken || "",
+                    formDataToSend
+                );
+            } else {
+                // إضافة مشروع جديد
+                await context.portfolioActions.addNewProject(
+                    context.userToken || "",
+                    formDataToSend
+                );
+            }
+
+            onClose();
+            setLoading(false);
+        } catch (error) {
+            console.error("Error saving project:", error);
+            alert("Failed to save project");
+            setLoading(false);
+        }
+    };
+
+    if (!isOpen || !context) return null;
+
+    const { projectCategories, skills } = context;
+    const availableCategories = projectCategories || [];
+    const availableSkills = skills || [];
+
+    return (
+        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+            <div className="bg-white dark:bg-[#1E2235] rounded-2xl p-4 sm:p-6 md:p-8 max-w-4xl w-full shadow-2xl border border-[#F8F9FC] dark:border-[#121629] my-8">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-lg sm:text-xl font-bold text-[#111827] dark:text-[#E2E8F0]">
+                        {isEditing ? "Edit Project" : "Add New Project"}
+                    </h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                        disabled={loading}
+                    >
+                        ✕
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* العنوان */}
+                    <div className="space-y-2">
+                        <label htmlFor="title" className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                            Title *
+                        </label>
+                        <Input
+                            id="title"
+                            value={formData.title}
+                            onChange={handleChange}
+                            required
+                            className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                            disabled={loading}
+                        />
+                    </div>
+
+                    {/* الوصف */}
+                    <div className="space-y-2">
+                        <label htmlFor="description" className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                            Description *
+                        </label>
+                        <Textarea
+                            id="description"
+                            value={formData.description}
+                            onChange={handleChange}
+                            required
+                            rows={4}
+                            className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                            disabled={loading}
+                        />
+                    </div>
+
+                    {/* الصورة */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                            Image * {isEditing && "(Leave empty to keep current)"}
+                        </label>
+                        <Input
+                            type="file"
+                            onChange={handleFileChange}
+                            accept="image/*"
+                            className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                            disabled={loading}
+                            required={!isEditing}
+                        />
+                        {isEditing && projectData?.image && (
+                            <div className="mt-2">
+                                <p className="text-sm text-gray-500 dark:text-gray-400">Current image:</p>
+                                <img
+                                    src={projectData.image}
+                                    alt="Current project"
+                                    className="w-40 h-40 object-cover rounded-lg mt-1 border"
+                                />
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                            Category *
+                        </label>
+                        {availableCategories.length === 0 ? (
+                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
+                                <p className="text-yellow-600 dark:text-yellow-400 text-sm">
+                                    No categories available. Please add categories first.
+                                </p>
+                            </div>
+                        ) : (
+                            <Select
+                                value={formData.category}
+                                onValueChange={handleSelectChange}
+                                disabled={loading || availableCategories.length === 0}
+                            >
+                                <SelectTrigger className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]">
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {availableCategories.map((category) => (
+                                        <SelectItem key={category._id} value={category._id}>
+                                            {category.title}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        )}
+                    </div>
+
+                    {/* المهارات */}
+                    <div className="space-y-2">
+                        <label className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                            Skills *
+                        </label>
+                        {availableSkills.length === 0 ? (
+                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-800">
+                                <p className="text-yellow-600 dark:text-yellow-400 text-sm">
+                                    No skills available. Please add skills first.
+                                </p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 p-3 border rounded-lg bg-gray-50 dark:bg-gray-800 max-h-60 overflow-y-auto">
+                                    {availableSkills.map((skill) => (
+                                        <div key={skill._id} className="flex items-center space-x-2">
+                                            <Checkbox
+                                                id={`skill-${skill._id}`}
+                                                checked={selectedSkills.includes(skill._id)}
+                                                onCheckedChange={() => handleSkillsChange(skill._id)}
+                                                disabled={loading}
+                                            />
+                                            <label
+                                                htmlFor={`skill-${skill._id}`}
+                                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                                            >
+                                                {skill.title}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                                {selectedSkills.length === 0 && (
+                                    <p className="text-sm text-red-500">Please select at least one skill</p>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    {/* الروابط */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <label htmlFor="githubFront" className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                                GitHub Frontend
+                            </label>
+                            <Input
+                                id="githubFront"
+                                value={formData.githubFront}
+                                onChange={handleChange}
+                                type="url"
+                                placeholder="https://github.com/..."
+                                className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                                disabled={loading}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="githubBack" className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                                GitHub Backend
+                            </label>
+                            <Input
+                                id="githubBack"
+                                value={formData.githubBack}
+                                onChange={handleChange}
+                                type="url"
+                                placeholder="https://github.com/..."
+                                className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                                disabled={loading}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="demo" className="block text-sm font-medium text-[#111827] dark:text-[#E2E8F0]">
+                                Live Demo
+                            </label>
+                            <Input
+                                id="demo"
+                                value={formData.demo}
+                                onChange={handleChange}
+                                type="url"
+                                placeholder="https://demo.example.com"
+                                className="bg-white dark:bg-[#1E2235] border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                                disabled={loading}
+                            />
+                        </div>
+                    </div>
+
+                    {/* المشروع المميز */}
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="hot"
+                            checked={formData.hot}
+                            onCheckedChange={handleCheckboxChange}
+                            disabled={loading}
+                        />
+                        <label
+                            htmlFor="hot"
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                            Mark as featured project
+                        </label>
+                    </div>
+
+                    {/* الأزرار */}
+                    <div className="flex gap-3 pt-4">
+                        <Button
+                            type="submit"
+                            className="bg-[#2563EB] dark:bg-[#4A7CFE] hover:bg-[#1D4ED8] dark:hover:bg-[#3B82F6] text-white flex-1"
+                            disabled={loading || !formData.category || selectedSkills.length === 0}
+                        >
+                            {loading ? (
+                                <span className="flex items-center">
+                                    <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </span>
+                            ) : (
+                                isEditing ? "Update Project" : "Add Project"
+                            )}
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={onClose}
+                            variant="outline"
+                            className="border-[#F8F9FC] dark:border-[#121629] text-[#111827] dark:text-[#E2E8F0]"
+                            disabled={loading}
+                        >
+                            Cancel
+                        </Button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    )
+}
+
+export default FormProject;

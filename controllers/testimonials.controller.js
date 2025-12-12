@@ -38,6 +38,20 @@ export const getTestimonials = async (req, res) => {
     }
 };
 
+// ------------------- Get Show Testimonials -------------------
+export const getShowTestimonials = async (req, res) => {
+    try {
+        const testimonials = await Testimonials.find({ isShow: true }).sort({ createdAt: -1 });
+        
+        res.status(200).json({
+            message: "Get show testimonials successfully",
+            data: testimonials
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching show testimonials", data: error.message });
+    }
+};
+
 // ------------------- Update Testimonial -------------------
 export const updateTestimonial = async (req, res) => {
     try {
