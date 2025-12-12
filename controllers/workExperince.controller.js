@@ -1,32 +1,5 @@
 import WorkExperience from '../models/workExperince.model.js';
-
-// ------------------- Add Work Experience -------------------
-export const addWorkExperience = async (req, res) => {
-    try {
-        const { type, title, organization, startDate, endDate, description, certificate } = req.body;
-
-        if (!type || !title || !organization || !startDate || !endDate || !description) {
-            return res.status(400).json({ message: "All required fields must be provided" });
-        }
-
-        const newExperience = await WorkExperience.create({
-            type,
-            title,
-            organization,
-            startDate,
-            endDate,
-            description,
-            certificate: certificate || null
-        });
-
-        res.status(201).json({
-            message: "Work experience added successfully",
-            data: newExperience
-        });
-    } catch (error) {
-        res.status(500).json({ message: "Error adding work experience", data: error.message });
-    }
-};
+import { uploadToCloudinary } from '../utils/uploadToCloudinary.js';
 
 // ------------------- Get All Work Experiences -------------------
 export const getWorkExperience = async (req, res) => {
@@ -38,6 +11,36 @@ export const getWorkExperience = async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: "Error fetching work experiences", data: error.message });
+    }
+};
+// ------------------- Get All Work Experiences -------------------
+export const addWorkExperience = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: "Work Experience image is required" });
+        }
+
+        const uploadImage = await uploadToCloudinary(
+            req.file.buffer,
+            "portfolio/workexperience"
+        );
+
+        const newExperience = await WorkExperience.create({
+            type: req.body.type,
+            title: req.body.title,
+            organization: req.body.organization,
+            startDate: req.body.startDate,
+            endDate: req.body.endDate,
+            description: req.body.description,
+            certificate: uploadImage.secure_url,
+        });
+
+        res.status(201).json({
+            message: "Work experience added successfully",
+            data: newExperience
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error adding work experience", data: error });
     }
 };
 
@@ -55,8 +58,13 @@ export const updateWorkExperience = async (req, res) => {
             startDate: req.body.startDate ?? experience.startDate,
             endDate: req.body.endDate ?? experience.endDate,
             description: req.body.description ?? experience.description,
-            certificate: req.body.certificate ?? experience.certificate
         };
+
+        if (req.file) {
+            updatedFields.certificate = await uploadToCloudinary(req.file);
+        } else if (req.body.certificate) {
+            updatedFields.certificate = req.body.certificate;
+        }
 
         const updatedExperience = await WorkExperience.findByIdAndUpdate(id, updatedFields, { new: true });
 

@@ -18,24 +18,18 @@ import Testimonials from './routes/testimonials.router.js'
 import WorkExperince from './routes/workExperince.router.js'
 import Contact from "./routes/contact.routes.js";
 
-// Load environment variables at the very top
+// ✅ 1. Load environment variables first
 dotenv.config()
-
-// Connect to database
-DB()
-
-// create admin automatically if not exists
-ensureDefaultAdmin();
 
 const port = process.env.PORT || 3000
 const app = express()
 
-// Apply middleware
+// ✅ 2. Apply middleware BEFORE routes
 app.use(cors)
 app.use(express.json())
+app.use(express.urlencoded({ extended: true })) // ⭐ مهمة لـ form-data
 
-
-// routes
+// ✅ 3. Define routes (لكن السيرفر لسه مش شغّال)
 app.use('/api/aboutme', AboutMe)
 app.use('/api/certification', Certification)
 app.use("/api/contact", Contact);
@@ -49,7 +43,25 @@ app.use('/api/skillscategory', SkillsCategory)
 app.use('/api/testimonials', Testimonials)
 app.use('/api/workexperince', WorkExperince)
 
+// ✅ 4. Create async startup function
+const startServer = async () => {
+    try {
+        // ⏳ انتظر الاتصال يتم تماماً
+        await DB()
 
-app.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}`)
-})
+        // ✅ بعد الاتصال، نفذ الـ admin function
+        await ensureDefaultAdmin();
+        console.log("✅ Admin check completed")
+
+        // 🚀 بس بعد كده شغّل السيرفر
+        app.listen(port, () => {
+            console.log(`🚀 Server running on http://localhost:${port}`)
+        })
+    } catch (error) {
+        console.error("❌ Failed to start server:", error)
+        process.exit(1)
+    }
+}
+
+// ✅ 5. نفّذ كل حاجة بالترتيب
+startServer()

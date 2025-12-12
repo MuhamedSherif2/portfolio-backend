@@ -7,8 +7,8 @@ import { optimizeImage } from '../middlewars/optimizeImage.middleware.js'
 const router = express.Router()
 
 router.get('/', getWorkExperience)
-router.post('/add', protect, addWorkExperience)
+router.post('/add', protect, upload.single("image"), optimizeImage, addWorkExperience)
 router.put('/update/:id', protect, upload.single("image"), optimizeImage, updateWorkExperience)
-router.delete('/delete/:id', protect, upload.single("image"), optimizeImage, deleteWorkExperience)
+router.delete('/delete/:id', protect, deleteWorkExperience)
 
 export default router;
