@@ -2,7 +2,7 @@ import cors from 'cors'
 
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? JSON.parse(process.env.ALLOWED_ORIGINS)
-  : ['http://localhost:3000', 'http://localhost:5173'];
+  : ['http://localhost:3000', 'http://localhost:5173', 'https://muhammed-chi.vercel.app'];
 
 const corsOptions = {
   origin: function (origin, cb) {
