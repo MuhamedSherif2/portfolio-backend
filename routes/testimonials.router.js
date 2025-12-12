@@ -6,7 +6,7 @@ const router = express.Router()
 
 router.get('/', getTestimonials)
 router.get('/get', getShowTestimonials)
-router.post('/add', protect, addTestimonial)
+router.post('/add', addTestimonial)
 router.put('/update/:id', protect, updateTestimonial)
 router.delete('/delete/:id', protect, deleteTestimonial)
 
