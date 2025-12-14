@@ -20,6 +20,7 @@ export const createProject = async (req, res) => {
         const newProject = await Project.create({
             title: req.body.title,
             description: req.body.description,
+            projectType: req.body.projectType,
             category: req.body.category,
             skills: skillsArray,
             hot: req.body.hot ?? false,
@@ -90,6 +91,7 @@ export const updateProject = async (req, res) => {
             {
                 title: req.body.title,
                 description: req.body.description,
+                projectType: req.body.projectType || project.projectType,
                 category: req.body.category,
                 skills: skillsArray,
                 hot: req.body.hot ?? project.hot,

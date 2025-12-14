@@ -3,16 +3,17 @@ import upload from "../middlewars/upload.middleware.js";
 import { optimizeImage } from "../middlewars/optimizeImage.middleware.js";
 import {
     createProject,
-    getProjects,
     deleteProject,
     updateProject,
-    getHotProjects
+    getProjects,
+    getHotProjects,
 } from "../controllers/project.controller.js";
 import { protect } from '../middlewars/auth.middleware.js'
 
 const router = express.Router();
 
 router.get("/", getProjects);
+
 
 router.get("/hot", getHotProjects);
 
