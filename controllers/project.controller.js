@@ -19,7 +19,9 @@ export const createProject = async (req, res) => {
 
         const newProject = await Project.create({
             title: req.body.title,
-            description: req.body.description,
+            overview: req.body.overview, // ⬅️ تغيير description إلى overview
+            keyFeatures: req.body.keyFeatures, // ⬅️ إضافة
+            highlights: req.body.highlights, // ⬅️ إضافة
             projectType: req.body.projectType,
             category: req.body.category,
             skills: skillsArray,
@@ -90,14 +92,16 @@ export const updateProject = async (req, res) => {
             id,
             {
                 title: req.body.title,
-                description: req.body.description,
+                overview: req.body.overview || project.overview, // ⬅️ تغيير
+                keyFeatures: req.body.keyFeatures || project.keyFeatures, // ⬅️ إضافة
+                highlights: req.body.highlights || project.highlights, // ⬅️ إضافة
                 projectType: req.body.projectType || project.projectType,
-                category: req.body.category,
+                category: req.body.category || project.category,
                 skills: skillsArray,
                 hot: req.body.hot ?? project.hot,
-                githubFront: req.body.githubFront,
-                githubBack: req.body.githubBack,
-                demo: req.body.demo,
+                githubFront: req.body.githubFront || project.githubFront,
+                githubBack: req.body.githubBack || project.githubBack,
+                demo: req.body.demo || project.demo,
                 image: imageUrl,
             },
             { new: true }

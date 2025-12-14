@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  description: { type: String, required: true },
+  overview: { type: String, required: true },
+  keyFeatures:{ type: String, required: true },
+  highlights:{ type: String, required: true },
   projectType: { type: String, required: true },
   category: {
     type: mongoose.Schema.Types.ObjectId,
