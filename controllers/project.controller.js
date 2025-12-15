@@ -19,9 +19,9 @@ export const createProject = async (req, res) => {
 
         const newProject = await Project.create({
             title: req.body.title,
-            overview: req.body.overview, // ⬅️ تغيير description إلى overview
-            keyFeatures: req.body.keyFeatures, // ⬅️ إضافة
-            highlights: req.body.highlights, // ⬅️ إضافة
+            overview: req.body.overview,
+            keyFeatures: req.body.keyFeatures, 
+            highlights: req.body.highlights, 
             projectType: req.body.projectType,
             category: req.body.category,
             skills: skillsArray,
@@ -43,7 +43,7 @@ export const getProjects = async (req, res) => {
     try {
         const projects = await Project.find()
             .populate("category", "title")
-            .populate("skills", "skill_name skill_icon")
+            .populate("skills", "title image")
             .sort({ createdAt: -1 });
 
         res.status(200).json({ message: "Get all projects successfully", data: projects });
@@ -57,7 +57,7 @@ export const getHotProjects = async (req, res) => {
     try {
         const projects = await Project.find({ hot: true })
             .populate("category", "title")
-            .populate("skills", "skill_name skill_icon")
+            .populate("skills", "title image")
             .sort({ createdAt: -1 });
 
         res.status(200).json({ message: "Get hot projects successfully", data: projects });
