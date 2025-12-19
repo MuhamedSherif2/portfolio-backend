@@ -2,12 +2,10 @@ import cors from 'cors';
 
 const allowedOrigins = [
   'https://muhammed-chi.vercel.app',
-  'https://mohammeed.netlify.app/',
+  'https://mohammeed.netlify.app',
   'http://localhost:3000',
   'http://localhost:5173'
 ];
-
-console.log('🚀 CORS Config Loaded. Allowing origins:', allowedOrigins);
 
 const corsOptions = {
   origin: allowedOrigins,
